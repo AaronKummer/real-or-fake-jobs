@@ -13,23 +13,29 @@ from InputHelper import InputHelper
 def main():
     print('starting program')
     # get some input
-    ih = InputHelper()
+    # ih = InputHelper()
 
     # parse csv
     df = pd.read_csv('fake_job_postings.csv')
-    
+    df=tokenize_job_title_col(df)
 
     # check data
     # print(df.columns)
-    # print(df['employment_type'].unique().tolist())
+    print(df['employment_type'].unique().tolist())
 
 
 
-
-
-
-
-    print('done')
+def tokenize_job_title_col(dataframe):
+    dataframe['employment_type'].fillna(5, inplace=True)
+    dataframe.replace({'employment_type': {
+        'Full-time': 1,
+        'Part-time': 2,
+        'Contract': 3,
+        'Temporary': 4,
+        'Other': 5,
+    }},inplace=True)
+    dataframe['employment_type'].astype(int)
+    return dataframe
 
 if __name__ == '__main__':
     main()
