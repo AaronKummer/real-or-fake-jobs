@@ -1,9 +1,10 @@
 class InputHelper():
     def __init__(self) -> None:
-        remote = self.yesno('Is this job remote? y/n')
-        has_logo = self.yesno("Does this company have a logo? y/n")
-        has_questions = self.yesno("Are there company questions? y/n")
-        job_title = self.tokenize_job_title('1) Full-time, 2) Part-time, 3) Contact, 4) Temporary, 5) Other')
+        self.remote = self.yesno('Is this job remote? y/n')
+        self.has_logo = self.yesno("Does this company have a logo? y/n")
+        self.has_questions = self.yesno("Are there company questions? y/n")
+        self.employment_type = self.tokenize_job_title('1) Full-time, 2) Part-time, 3) Contact, 4) Temporary, 5) Other')
+        self.is_in_usa = self.yesno('Is this job in the USA? y/n')
     def yesno(self,question):
         yes = {'yes', 'y'}
         no = {'no', 'n'}  # pylint: disable=invalid-name
@@ -18,7 +19,6 @@ class InputHelper():
                 return False
             else:
                 print("Please respond by yes or no.") 
-
 
     def tokenize_job_title(self, question):
         print('What type of position is this?')
