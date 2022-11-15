@@ -21,40 +21,35 @@ def main():
     # wrangle data
     df=tokenize_job_title_col(df)
 
-    # make more jobs fraudulent this should randomly make half of the jobs fraudulent
-    df['fraudulent'] = [random.getrandbits(1) for i in df.index]
+    # make more jobs fraudulent roughly about 25%
+    df['fraudulent'] = [random.getrandbits(2) for i in df.index ]
 
     # create new column is_in_usa based off address column
     df['is_in_usa'] = df['location'].str.split(',').str[0] == 'US'
 
-    # df['fraudulent'] = 1
-    # df['fraudulent'][0] = 0
-
-    # check data
-    # print(df.columns)
-    # print(df['employment_type'].unique().tolist())
-    # print(df['is_in_usa'])
-
-    # visualize data
 
 
     # create ML model
-    X = df[['telecommuting','has_company_logo','has_questions','employment_type']]
+    X = df[['telecommuting','has_company_logo','has_questions','employment_type', 'is_in_usa']]
     y = df['fraudulent']
-    X_train, X_test, y_train, y_test = model_selection.train_test_split(X,y,test_size=0.3)
 
     model = linear_model.LogisticRegression()
-    model.fit(X_train,y_train)
 
-    y_pred = model.predict(X_test)
-    print(metrics.accuracy_score(y_test, y_pred))
-    # y_pred = model.predict([[ih.remote, ih.has_logo, ih.has_logo, ih.employment_type]])
-    # y_pred = model.predict([[1, 1, 1, 1]])
-    # print(y_pred)
+    # train and evaluate test set 
+    X_train, X_test, y_train, y_test = model_selection.train_test_split(X,y,test_size=0.8)
+    model.fit(X_train,y_train)
+    # y_pred = model.predict(X_test)
+    # print("this job is " + str(round(metrics.accuracy_score(y_test, y_pred),2)*100) + "% likely to be fake.")
+
+    input = [ih.remote, ih.has_logo, ih.has_logo, ih.employment_type,ih.is_in_usa] 
+    input = input.reshape(1,-1)
+    y_pred = model.predict(input)
+    print("this job is " + str(round(metrics.accuracy_score(y, y_pred),2)*100) + "% likely to be fake.")
+
+    # visualize data
     # print(X.shape[0])
     # print(y.shape[0])
     # print(df.loc[df['fraudulent'] == 1]['description'])
-
     # print(df[df['fraudulent']==1].shape[0])
 
 def is_in_usa(row):
