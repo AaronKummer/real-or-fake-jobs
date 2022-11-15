@@ -1,4 +1,3 @@
-import matplotlib.gridspec as gridspec  # to do the grid of plots
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,7 +6,6 @@ from matplotlib import pyplot
 from sklearn import metrics, model_selection
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
-import random
 from InputHelper import InputHelper
 
 
@@ -20,10 +18,13 @@ def main():
     # wrangle data
     df = tokenize_job_title_col(df)
     # make more jobs fraudulent
-    df['fraudulent'] = [random.getrandbits(3) for i in df.index]
+    # df['fraudulent'] = [random.getrandbits(3) for i in df.index]
 
     # create new column is_in_usa based off address column
     df['is_in_usa'] = df['location'].str.split(',').str[0] == 'US'
+    df['is_in_usa'] = df['is_in_usa'].astype(bool)
+    df['fraudulent'] = df['fraudulent'].astype(bool)
+    df.loc[df['is_in_usa'] == True, 'fraudulent'] = False
 
     # create ML model
     X = df[['telecommuting', 'has_company_logo',
@@ -37,7 +38,7 @@ def main():
     # evaluate accuracy
     training_model = DecisionTreeClassifier()
     X_train, X_test, y_train, y_test = model_selection.train_test_split(
-        X, y, test_size=0.2)
+        X, y, test_size=0.9)
     training_model.fit(X_train, y_train)
     v_pred = training_model.predict(X_test)
     accuracy = metrics.accuracy_score(y_test, v_pred)
@@ -49,13 +50,21 @@ def main():
     print('the job is ' + str(round(accuracy*100, 2)) + '% likely to be ' + answer)
 
     # visualize data
-    column_names =['fraudulent','telecommuting', 'has_company_logo','has_questions', 'employment_type', 'is_in_usa']
-    Z = df[column_names]
-    print(Z.shape)
-    print(Z.info())
-    Z.plot()
+    Z = df[['fraudulent','telecommuting', 'has_company_logo',
+            'has_questions', 'employment_type', 'is_in_usa']]
+    Z['fraudulent'] = Z['fraudulent'].astype(bool)
+    Z['telecommuting'] = Z['telecommuting'].astype(bool)
+    Z['has_company_logo'] = Z['has_company_logo'].astype(bool)
+    Z['has_questions'] = Z['has_questions'].astype(bool)
+    Z['is_in_usa'] = Z['is_in_usa'].astype(bool)
+    sns.set()
+    sns.relplot(x='fraudulent',y='telecommuting', col='is_in_usa', data=Z, kind='line')
     plt.show()
-
+    sns.catplot(x='fraudulent',y='has_company_logo', col='is_in_usa', data=Z, kind='bar')
+    plt.show()
+    sns.catplot(x='fraudulent',y='has_questions', col='is_in_usa', data=Z, kind='bar')
+    plt.show()
+    print(Z.info())
 
 def is_in_usa(row):
     if row['location'].split(',')[0] == 'US':
